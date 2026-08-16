@@ -1,0 +1,4 @@
+Repositories are Spring interfaces that handle all database operations.
+They provide built‑in methods like save, find, delete,
+and custom methods like findByEmail. They are singletons,
+used in services and controllers to fetch and store data.

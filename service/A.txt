@@ -1,0 +1,4 @@
+Services contain all the business logic. AuthService handles login/signup,
+CustomUserDetailsService loads users for Spring Security,
+UserFactory creates user objects (Factory pattern),
+and DishAdapter converts frontend data to database entities (Adapter pattern).

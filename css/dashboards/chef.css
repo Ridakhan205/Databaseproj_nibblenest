@@ -1,0 +1,527 @@
+/* ========================= */
+/* CHEF DASHBOARD            */
+/* ========================= */
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    background: #fff8f0;
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+}
+
+/* ===== NOTIFICATION BAR ===== */
+
+.notif-bar {
+    position: fixed;
+    top: -70px; left: 0;
+    width: 100%; min-height: 52px;
+    background: #744D30;
+    color: #FFF8F0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    z-index: 9999;
+    transition: top 0.4s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.notif-bar.show { top: 0; }
+.notif-bar.notif-order  { background: #2e7d52; }
+.notif-bar.notif-warn   { background: #b45309; }
+.notif-bar.notif-info   { background: #744D30; }
+
+.notif-message { font-size: 15px; font-weight: 400; }
+.notif-close {
+    background: none; border: none;
+    color: #FFF8F0; font-size: 18px;
+    cursor: pointer; transition: .2s;
+}
+.notif-close:hover { transform: scale(1.2); }
+
+
+/* ===== TOP BAR ===== */
+
+.chef-topbar {
+    width: 100%;
+    height: 120px;
+    background: #fff8f0;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0; z-index: 100;
+    padding-right: 50px;
+    padding-left: 150px;
+}
+
+.topbar-logo-box {
+    background: #FFB366;
+    width: 120px; height: 120px;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    flex-shrink: 0;
+}
+.topbar-logo-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 20px; font-weight: 600; color: #744D30;
+}
+.topbar-logo-subtitle {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px; color: #744D30; letter-spacing: 3px;
+}
+
+.topbar-dashboard-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 32px; font-weight: 600;
+    color: #744D30;
+    flex: 1; text-align: center;
+    margin-left: -140px;
+}
+
+.profile-icon-btn {
+    background: none; border: none;
+    cursor: pointer; margin-left: auto;
+    flex-shrink: 0; transition: .2s;
+}
+.profile-icon-btn:hover { transform: scale(1.1); }
+
+
+/* ===== MAIN CONTENT ===== */
+
+.chef-content {
+    display: flex;
+    gap: 28px;
+    padding: 24px 140px 24px 140px;
+    align-items: stretch;
+    height: calc(100vh - 120px);
+    overflow: hidden;
+}
+
+/* LEFT — chart + completed, same height as right column */
+.chef-left {
+    flex: 1;
+    display: flex; flex-direction: column;
+    gap: 16px;
+    min-height: 0; /* allow shrinking */
+}
+
+/* Chart Card — fills available space between top and completed card */
+.chart-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 14px 16px 10px 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.chart-label {
+    font-size: 13px; font-weight: 500;
+    color: #8B5E3C; margin-bottom: 6px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* Completed Orders Card — fixed height at bottom of left column */
+.completed-card {
+    background: #FFB366;
+    border-radius: 14px;
+    padding: 14px 24px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 2px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    flex-shrink: 0;
+    height: 90px;
+    justify-content: center;
+}
+.completed-total {
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px; font-weight: 700;
+    color: #744D30;
+    align-self: flex-start;
+}
+.completed-label {
+    font-family: 'Poppins', sans-serif;
+    font-size: 20px; font-weight: 400;
+    color: #744D30;
+}
+
+/* RIGHT — order stage buttons, same height as left column */
+.chef-right {
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    width: 260px; flex-shrink: 0;
+}
+
+.order-stage-btn {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    border-radius: 14px;
+    background: #744D30;
+    color: #FFF8F0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px; font-weight: 500;
+    border: none; cursor: pointer;
+    transition: .25s;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    margin-bottom: 16px;
+}
+.order-stage-btn:last-child { margin-bottom: 0; }
+.order-stage-btn:hover {
+    background: #5c3a22;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.2);
+}
+
+/* Notification badge */
+.stage-badge {
+    position: absolute;
+    top: -10px; right: -10px;
+    background: #FFB366;
+    color: #744D30;
+    font-size: 13px; font-weight: 800;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: none; /* hidden by default — only shows when count > 0 */
+    align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    animation: badgePulse 1.5s ease-in-out infinite;
+}
+.stage-badge.has-orders {
+    display: flex; /* only visible when there are orders */
+}
+@keyframes badgePulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(255,179,102,0.7); }
+    50%      { box-shadow: 0 0 0 8px rgba(255,179,102,0); }
+}
+
+
+
+
+/* ===== ORDER SIDEBAR ===== */
+
+.order-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s ease;
+}
+.order-overlay.active { opacity:1; pointer-events:all; }
+
+.order-sidebar {
+    position: fixed;
+    top: 0; right: -420px;
+    width: 380px; height: 100%;
+    background: #fff8f0;
+    z-index: 300;
+    display: flex; flex-direction: column;
+    transition: right .35s ease;
+    box-shadow: -4px 0 30px rgba(0,0,0,0.15);
+}
+.order-sidebar.active { right: 0; }
+
+.order-sidebar-header {
+    padding: 28px 28px 18px 28px;
+    display: flex; justify-content: space-between;
+    align-items: center;
+    border-bottom: 1.5px solid #e8d5c0;
+    background: #FFB366;
+}
+.order-sidebar-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 26px; font-weight: 600; color: #744D30;
+}
+.order-sidebar-close {
+    background: none; border: none;
+    font-size: 20px; color: #744D30;
+    cursor: pointer; transition: .2s;
+}
+.order-sidebar-close:hover { transform: scale(1.2); }
+
+.order-sidebar-list {
+    flex: 1; overflow-y: auto;
+    padding: 20px 24px;
+    display: flex; flex-direction: column; gap: 18px;
+}
+
+/* Individual order item in sidebar */
+.chef-order-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px 20px;
+    border: 1.5px solid #e8d5c0;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.chef-order-id {
+    font-size: 14px; font-weight: 700;
+    color: #744D30; margin-bottom: 4px;
+}
+.chef-order-customer {
+    font-size: 13px; color: #8B5E3C;
+    margin-bottom: 10px; font-weight: 500;
+}
+.chef-order-items {
+    font-size: 14px; color: #2d1a0e;
+    line-height: 1.8; margin-bottom: 14px;
+}
+
+/* Dish item row */
+.chef-dish-row {
+    display: flex; align-items: center;
+    gap: 8px; font-size: 14px; color: #2d1a0e;
+    padding: 3px 0;
+}
+.chef-dish-row.unavailable {
+    opacity: 0.45;
+    text-decoration: line-through;
+    position: relative;
+}
+.unavailable-msg {
+    font-size: 11px; color: #b45309;
+    font-style: italic;
+}
+
+/* Action button per stage */
+.chef-action-btn {
+    width: 100%; height: 42px;
+    border-radius: 50px;
+    background: #744D30; color: #FFF8F0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px; font-weight: 500;
+    border: none; cursor: pointer; transition: .25s;
+}
+.chef-action-btn:hover { background: #5c3a22; transform: translateY(-2px); }
+.chef-action-btn.btn-ready    { background: #2e7d52; }
+.chef-action-btn.btn-ready:hover { background: #1e5c3a; }
+.chef-action-btn.btn-complete { background: #1a5276; }
+.chef-action-btn.btn-complete:hover { background: #154360; }
+
+/* Empty state */
+.sidebar-empty {
+    font-size: 15px; color: #9e7a5a;
+    text-align: center; margin-top: 50px;
+}
+
+
+/* ===== PROFILE CARD MODAL ===== */
+
+.profile-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 400;
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s ease;
+}
+.profile-overlay.active { opacity:1; pointer-events:all; }
+
+.profile-card-modal {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.88);
+    opacity: 0; pointer-events: none;
+    z-index: 500;
+    transition: transform .35s ease, opacity .35s ease;
+    background: #FFF8F0;
+    border-radius: 24px;
+    width: 620px;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 36px 40px 32px 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.profile-card-modal.active {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1; pointer-events: all;
+}
+
+/* Avatar + name row at top */
+.profile-avatar-section {
+    display: flex; align-items: center; gap: 18px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1.5px solid #e8d5c0;
+}
+.profile-chef-name {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 26px; font-weight: 600; color: #2d1a0e;
+    margin-bottom: 4px;
+}
+.profile-role-tag {
+    background: #FFB366;
+    color: #744D30;
+    font-size: 13px; font-weight: 600;
+    padding: 3px 14px; border-radius: 50px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+/* Two column layout */
+.profile-two-col {
+    display: flex; gap: 0;
+    margin-bottom: 28px;
+}
+.profile-col {
+    flex: 1;
+    display: flex; flex-direction: column; gap: 16px;
+    padding: 0 20px;
+}
+.profile-col:first-child { padding-left: 0; }
+.profile-col:last-child  { padding-right: 0; }
+
+.profile-col-divider {
+    width: 1.5px;
+    background: #e8d5c0;
+    margin: 0 10px;
+    flex-shrink: 0;
+}
+
+.profile-col-title {
+    font-size: 12px; font-weight: 700;
+    color: #8B5E3C; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 4px;
+}
+
+/* Info rows (left column) */
+.profile-info-row {
+    display: flex; flex-direction: column; gap: 2px;
+}
+.profile-info-label {
+    font-size: 11px; font-weight: 600;
+    color: #b08060; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.profile-info-val {
+    font-size: 15px; font-weight: 500; color: #2d1a0e;
+}
+.status-active { color: #2e7d52; font-weight: 700; }
+
+/* Stat boxes (right column) */
+.profile-stat-box {
+    background: #f5ede4;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.profile-stat-num {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 28px; font-weight: 600; color: #744D30;
+    line-height: 1;
+}
+.profile-stat-label {
+    font-size: 12px; font-weight: 400; color: #8B5E3C;
+}
+
+/* Bottom buttons row */
+.profile-btn-row {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding-top: 20px;
+    border-top: 1.5px solid #e8d5c0;
+}
+.profile-readonly-note {
+    font-size: 13px; color: #b08060;
+    font-style: italic;
+}
+.profile-logout-btn {
+    height: 44px; padding: 0 28px;
+    border-radius: 50px;
+    background: none;
+    border: 1.5px solid #e05252;
+    color: #e05252;
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px; font-weight: 500;
+    cursor: pointer; transition: .2s;
+}
+.profile-logout-btn:hover { background: #ffe0e0; }
+
+
+/* ===== PREPARING STATUS ===== */
+
+.inventory-ok {
+    font-size: 13px; font-weight: 500;
+    color: #2e7d52;
+    background: #d4edda;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+}
+
+
+/* ===== INGREDIENT CHECK LIST (Preparing Stage) ===== */
+
+.check-in-progress {
+    font-size: 13px; font-weight: 500;
+    color: #744D30;
+    background: #fff3e0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+}
+
+.check-spinner {
+    font-size: 16px;
+    animation: spin 1.5s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0%   { transform: rotate(0deg);   }
+    100% { transform: rotate(360deg); }
+}
+
+.check-list {
+    background: #f5ede4;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+}
+
+.check-list-title {
+    font-size: 12px; font-weight: 600;
+    color: #8B5E3C;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.check-row {
+    display: flex; align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(180,140,100,0.15);
+    animation: checkFadeIn 0.4s ease forwards;
+}
+
+@keyframes checkFadeIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.check-tick {
+    color: #2e7d52;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.check-name {
+    font-size: 14px; font-weight: 500;
+    color: #2d1a0e; flex: 1;
+}
+
+.check-dish {
+    font-size: 12px; color: #9e7a5a;
+    font-style: italic;
+}
+
+.check-done {
+    margin-top: 10px;
+    font-size: 13px; font-weight: 600;
+    color: #2e7d52;
+    text-align: center;
+    padding-top: 8px;
+    border-top: 1px solid rgba(46,125,82,0.2);
+}

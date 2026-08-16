@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NibbleNest RMS - Customer Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/dashboards/customer.css">
+</head>
+<body>
+<div id="loading" style="text-align:center; margin-top:50px;">Checking session...</div>
+<script>
+    (async function() {
+        try {
+            const res = await fetch('/api/auth/check');
+            if (!res.ok) {
+                window.location.replace('/login');
+                return;
+            }
+        } catch(e) {
+            window.location.replace('/login');
+        }
+    })();
+</script>
+<div id="dashboard-content" style="visibility:hidden;">
+<!-- ============================================================ -->
+<!-- NOTIFICATION BAR (slides from top — one at a time)          -->
+<!-- DB: Table: notifications (notif_id, user_id, message,       -->
+<!--     type, is_read, created_at)                              -->
+<!-- API: GET /api/notifications/unread → fetch on page load     -->
+<!-- ============================================================ -->
+<div class="notif-bar" id="notifBar">
+    <span class="notif-message" id="notifMessage"></span>
+    <button class="notif-close" onclick="closeNotification()">✕</button>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- BIRTHDAY BALLOON ANIMATION LAYER                            -->
+<!-- JS: Triggered when DOB matches today or within 7 days       -->
+<!-- ============================================================ -->
+<div class="balloon-container" id="balloonContainer"></div>
+
+
+<!-- ============================================================ -->
+<!-- MENU SIDEBAR (Left)                                         -->
+<!-- ============================================================ -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMenuSidebar()"></div>
+
+<div class="menu-sidebar" id="menuSidebar">
+    <button class="sidebar-close-btn" onclick="closeMenuSidebar()">&#10005;</button>
+
+    <nav class="sidebar-nav">
+        <a href="#" onclick="showSection('menu'); closeMenuSidebar();">Browse Menu</a>
+        <a href="#" onclick="showSection('profile'); closeMenuSidebar();">Profile</a>
+        <a href="#" onclick="openCartSidebar(); closeMenuSidebar();">Cart</a>
+        <a href="#" onclick="showSection('myorders'); closeMenuSidebar();">My Orders</a>
+        <a href="#" onclick="showSection('feedback'); closeMenuSidebar();">Feedbacks</a>
+    </nav>
+
+    <!-- AUTH: On logout → POST /api/auth/logout → clear session → redirect / -->
+    <button class="sidebar-logout-btn" onclick="handleLogout()">Logout</button>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- CART SIDEBAR (Right)                                        -->
+<!-- DB: Table: carts (cart_id, user_id, dish_id, qty, added_at) -->
+<!-- API: GET /api/cart/{userId} → load on open                  -->
+<!--      POST /api/cart/add    → on add to cart                 -->
+<!--      DELETE /api/cart/remove → on ✕ click                  -->
+<!-- ============================================================ -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCartSidebar()"></div>
+
+<div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+        <!-- TODO: Replace with your cart PNG image -->
+        <img src="/images/cart.png" alt="Cart" class="cart-icon-large-img">
+    </div>
+
+    <div class="cart-items-list" id="cartItemsList">
+        <p class="cart-empty-msg">Your cart is empty.</p>
+    </div>
+
+    <div class="cart-footer">
+        <div class="cart-tax-row">
+            <span>Tax</span>
+            <span id="cartTax">0/-</span>
+        </div>
+        <div class="cart-total-row">
+            <span>Total</span>
+            <span id="cartTotal">0/-</span>
+        </div>
+        <!-- API: POST /api/orders/place                              -->
+        <!-- DB: INSERT INTO orders + order_items tables             -->
+        <!-- AFTER: notify chef dashboard, show order in My Orders   -->
+        <button class="cart-order-btn" onclick="placeOrder()">Order Now</button>
+    </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- TOP BAR                                                     -->
+<!-- ============================================================ -->
+<div class="customer-topbar">
+    <button class="hamburger-btn" onclick="openMenuSidebar()">
+        <span></span><span></span><span></span>
+    </button>
+
+    <div class="topbar-logo-box">
+        <h1 class="topbar-logo-title">NibbleNest</h1>
+        <p class="topbar-logo-subtitle">R | M | S</p>
+    </div>
+
+    <button class="cart-btn" onclick="openCartSidebar()">
+        <!-- TODO: Replace with your cart PNG image -->
+        <img src="/images/cart.png" alt="Cart" class="cart-icon-img">
+        <span class="cart-count" id="cartCount">0</span>
+    </button>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MAIN CONTENT AREA                                           -->
+<!-- Sections switch based on sidebar option clicked             -->
+<!-- ============================================================ -->
+<div class="dashboard-content">
+
+
+    <!-- ======================================================== -->
+    <!-- SECTION: MENU (default view)                            -->
+    <!-- ======================================================== -->
+    <div id="section-menu" class="dash-section active-section">
+
+        <!-- Menu -->
+        <div class="dash-section-header">
+            <h3 class="dash-section-title">Menu</h3>
+            <div class="dash-divider"></div>
+        </div>
+
+        <div class="dash-menu-grid" id="customerMainMenuGrid">
+
+            <div class="dash-menu-item" id="dish-clubwich"
+                 onclick="openDishCard('/images/clubwich.png', 'Club Wich', 'PKR 450/-', 'A crispy grilled sandwich served with golden fries on the side.')">
+                <div class="dish-rating" id="rating-clubwich">
+                    <span class="rating-number" id="rnum-clubwich">--</span>
+                    <div class="rating-stars" id="rstars-clubwich">
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                    </div>
+                </div>
+                <div class="dash-plate-wrapper">
+                    <img src="/images/clubwich.png" alt="Club Wich" class="dash-plate-img">
+                </div>
+                <p class="dash-item-name">Club wich</p>
+            </div>
+
+            <div class="dash-menu-item" id="dish-lavashrol"
+                 onclick="openDishCard('/images/lavashrol.png', 'Lavash Rol', 'PKR 500/-', 'Soft lavash wrap filled with fresh veggies and grilled fillings.')">
+                <div class="dish-rating" id="rating-lavashrol">
+                    <span class="rating-number" id="rnum-lavashrol">--</span>
+                    <div class="rating-stars" id="rstars-lavashrol">
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                    </div>
+                </div>
+                <div class="dash-plate-wrapper">
+                    <img src="/images/lavashrol.png" alt="Lavash Rol" class="dash-plate-img">
+                </div>
+                <p class="dash-item-name">Lavash Rol</p>
+            </div>
+
+            <div class="dash-menu-item" id="dish-mushta"
+                 onclick="openDishCard('/images/mushta.png', 'Mushta', 'PKR 480/-', 'A rich and flavorful traditional dish made with fresh ingredients.')">
+                <div class="dish-rating" id="rating-mushta">
+                    <span class="rating-number" id="rnum-mushta">--</span>
+                    <div class="rating-stars" id="rstars-mushta">
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                    </div>
+                </div>
+                <div class="dash-plate-wrapper">
+                    <img src="/images/mushta.png" alt="Mushta" class="dash-plate-img">
+                </div>
+                <p class="dash-item-name">Mushta</p>
+            </div>
+
+            <div class="dash-menu-item" id="dish-classicburger"
+                 onclick="openDishCard('/images/classicburger.png', 'Classic Burger', 'PKR 550/-', 'A juicy beef patty with fresh toppings on a toasted bun, served with crispy golden fries.')">
+                <div class="dish-rating" id="rating-classicburger">
+                    <span class="rating-number" id="rnum-classicburger">--</span>
+                    <div class="rating-stars" id="rstars-classicburger">
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                    </div>
+                </div>
+                <div class="dash-plate-wrapper">
+                    <img src="/images/classicburger.png" alt="Classic Burger" class="dash-plate-img">
+                </div>
+                <p class="dash-item-name">Classic Burger</p>
+            </div>
+
+            <div class="dash-menu-item" id="dish-roastedjelepeno"
+                 onclick="openDishCard('/images/roastedjelepeno.png', 'Roasted Jelepeno', 'PKR 420/-', 'Perfectly roasted jalapenos with a smoky spicy kick, great as a side.')">
+                <div class="dish-rating" id="rating-roastedjelepeno">
+                    <span class="rating-number" id="rnum-roastedjelepeno">--</span>
+                    <div class="rating-stars" id="rstars-roastedjelepeno">
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                    </div>
+                </div>
+                <div class="dash-plate-wrapper">
+                    <img src="/images/roastedjelepeno.png" alt="Roasted Jelepeno" class="dash-plate-img">
+                </div>
+                <p class="dash-item-name">Roasted Jelepeno</p>
+            </div>
+
+            <div class="dash-menu-item" id="dish-cheesypizza"
+                 onclick="openDishCard('/images/cheesypizza.png', 'Cheesy Pizza', 'PKR 700/-', 'Loaded with melted cheese on a crispy base with rich tomato sauce.')">
+                <div class="dish-rating" id="rating-cheesypizza">
+                    <span class="rating-number" id="rnum-cheesypizza">--</span>
+                    <div class="rating-stars" id="rstars-cheesypizza">
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                    </div>
+                </div>
+                <div class="dash-plate-wrapper">
+                    <img src="/images/cheesypizza.png" alt="Cheesy Pizza" class="dash-plate-img">
+                </div>
+                <p class="dash-item-name">Cheesy Pizza</p>
+            </div>
+
+        </div>
+
+        <!-- Sweet Dessert -->
+        <div class="dash-section-header" style="margin-top:70px;">
+            <h3 class="dash-section-title">Sweet Dessert</h3>
+            <div class="dash-divider"></div>
+        </div>
+
+        <div class="dash-menu-grid" id="customerDessertGrid">
+
+            <div class="dash-menu-item" id="dish-sweetdoughnut"
+                 onclick="openDishCard('/images/sweetdoughnut.png', 'Sweet Doughnut', 'PKR 250/-', 'Soft fluffy doughnut glazed with sweet icing and sprinkles on top.')">
+                <div class="dish-rating" id="rating-sweetdoughnut">
+                    <span class="rating-number" id="rnum-sweetdoughnut">--</span>
+                    <div class="rating-stars" id="rstars-sweetdoughnut">
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                    </div>
+                </div>
+                <div class="dash-plate-wrapper">
+                    <img src="/images/sweetdoughnut.png" alt="Sweet Doughnut" class="dash-plate-img">
+                </div>
+                <p class="dash-item-name">Sweet Doughnut</p>
+            </div>
+
+            <div class="dash-menu-item" id="dish-cakeroll"
+                 onclick="openDishCard('/images/cakeroll.png', 'Cake Roll', 'PKR 300/-', 'A delicate rolled cake with creamy filling and a soft sponge layer.')">
+                <div class="dish-rating" id="rating-cakeroll">
+                    <span class="rating-number" id="rnum-cakeroll">--</span>
+                    <div class="rating-stars" id="rstars-cakeroll">
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                    </div>
+                </div>
+                <div class="dash-plate-wrapper">
+                    <img src="/images/cakeroll.png" alt="Cake Roll" class="dash-plate-img">
+                </div>
+                <p class="dash-item-name">Cake Roll</p>
+            </div>
+
+            <div class="dash-menu-item" id="dish-chocoberry"
+                 onclick="openDishCard('/images/chocoberry.png', 'Choco Berry', 'PKR 350/-', 'Fresh berries dipped in rich dark chocolate, a perfect sweet treat.')">
+                <div class="dish-rating" id="rating-chocoberry">
+                    <span class="rating-number" id="rnum-chocoberry">--</span>
+                    <div class="rating-stars" id="rstars-chocoberry">
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                    </div>
+                </div>
+                <div class="dash-plate-wrapper">
+                    <img src="/images/chocoberry.png" alt="Choco Berry" class="dash-plate-img">
+                </div>
+                <p class="dash-item-name">Choco Berry</p>
+            </div>
+
+            <div class="dash-menu-item" id="dish-chocolatecake"
+                 onclick="openDishCard('/images/chocolatecake.png', 'Chocolate Cake', 'PKR 400/-', 'A moist layered chocolate cake with velvety ganache frosting.')">
+                <div class="dish-rating" id="rating-chocolatecake">
+                    <span class="rating-number" id="rnum-chocolatecake">--</span>
+                    <div class="rating-stars" id="rstars-chocolatecake">
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                    </div>
+                </div>
+                <div class="dash-plate-wrapper">
+                    <img src="/images/chocolatecake.png" alt="Chocolate Cake" class="dash-plate-img">
+                </div>
+                <p class="dash-item-name">Chocolate Cake</p>
+            </div>
+
+            <div class="dash-menu-item" id="dish-sweetpancakes"
+                 onclick="openDishCard('/images/sweetpancakes.png', 'Sweet Pancakes', 'PKR 320/-', 'Fluffy golden pancakes drizzled with maple syrup and fresh berries.')">
+                <div class="dish-rating" id="rating-sweetpancakes">
+                    <span class="rating-number" id="rnum-sweetpancakes">--</span>
+                    <div class="rating-stars" id="rstars-sweetpancakes">
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                    </div>
+                </div>
+                <div class="dash-plate-wrapper">
+                    <img src="/images/sweetpancakes.png" alt="Sweet Pancakes" class="dash-plate-img">
+                </div>
+                <p class="dash-item-name">Sweet Pancakes</p>
+            </div>
+
+            <div class="dash-menu-item" id="dish-bberrycake"
+                 onclick="openDishCard('/images/bberrycake.png', 'B Berry Cake', 'PKR 380/-', 'A light berry cake topped with blueberries and a dusting of powdered sugar.')">
+                <div class="dish-rating" id="rating-bberrycake">
+                    <span class="rating-number" id="rnum-bberrycake">--</span>
+                    <div class="rating-stars" id="rstars-bberrycake">
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span><span class="star-icon">★</span>
+                        <span class="star-icon">★</span>
+                    </div>
+                </div>
+                <div class="dash-plate-wrapper">
+                    <img src="/images/bberrycake.png" alt="B Berry Cake" class="dash-plate-img">
+                </div>
+                <p class="dash-item-name">B Berry Cake</p>
+            </div>
+
+        </div>
+    </div>
+    <!-- END SECTION: MENU -->
+
+
+    <!-- ======================================================== -->
+    <!-- SECTION: PROFILE                                        -->
+    <!-- DB: Table: users                                        -->
+    <!--     Columns: user_id, name, email, phone, date_of_birth,-->
+    <!--     role, status, created_at, total_orders              -->
+    <!-- API: GET  /api/customer/profile → load profile          -->
+    <!--      PUT  /api/customer/profile → save edits            -->
+    <!-- ======================================================== -->
+    <div id="section-profile" class="dash-section">
+        <div class="card-panel" id="profileCard">
+
+            <h2 class="card-title">My Profile</h2>
+
+            <!-- Editable Fields -->
+            <div class="profile-grid">
+
+                <div class="profile-field">
+                    <label>Full Name</label>
+                    <!-- DB: users.name -->
+                    <input type="text" id="profileName" class="profile-input" placeholder="Your full name">
+                </div>
+
+                <div class="profile-field">
+                    <label>Email</label>
+                    <!-- DB: users.email -->
+                    <input type="email" id="profileEmail" class="profile-input" placeholder="Your email">
+                </div>
+
+                <div class="profile-field">
+                    <label>Phone</label>
+                    <!-- DB: users.phone -->
+                    <input type="tel" id="profilePhone" class="profile-input" placeholder="Your phone number">
+                </div>
+
+                <div class="profile-field">
+                    <label>Date of Birth</label>
+                    <!-- DB: users.date_of_birth                         -->
+                    <!-- JS: Used to calculate age + birthday check      -->
+                    <input type="date" id="profileDOB" class="profile-input">
+                </div>
+
+            </div>
+
+            <!-- Read Only Fields -->
+            <div class="profile-readonly-section">
+                <h4 class="readonly-title">Account Info</h4>
+                <div class="readonly-grid">
+
+                    <div class="readonly-field">
+                        <span class="readonly-label">Role</span>
+                        <!-- DB: users.role -->
+                        <span class="readonly-value" id="profileRole">Customer</span>
+                    </div>
+
+                    <div class="readonly-field">
+                        <span class="readonly-label">Status</span>
+                        <!-- DB: users.status -->
+                        <span class="readonly-value status-active" id="profileStatus">Active</span>
+                    </div>
+
+                    <div class="readonly-field">
+                        <span class="readonly-label">Member Since</span>
+                        <!-- DB: users.created_at -->
+                        <span class="readonly-value" id="profileMemberSince">--</span>
+                    </div>
+
+                    <div class="readonly-field">
+                        <span class="readonly-label">Total Orders</span>
+                        <!-- DB: COUNT(*) FROM orders WHERE customer_id = userId -->
+                        <span class="readonly-value" id="profileTotalOrders">0</span>
+                    </div>
+
+                    <div class="readonly-field">
+                        <span class="readonly-label">Age</span>
+                        <!-- JS: Calculated from date_of_birth -->
+                        <span class="readonly-value" id="profileAge">--</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <!-- API: PUT /api/customer/profile                      -->
+            <!-- DB: UPDATE users SET name=?, email=?, phone=?,      -->
+            <!--     date_of_birth=? WHERE user_id=?                 -->
+            <button class="card-save-btn" onclick="saveProfile()">Save Changes</button>
+
+        </div>
+    </div>
+    <!-- END SECTION: PROFILE -->
+
+
+    <!-- ======================================================== -->
+    <!-- SECTION: MY ORDERS                                      -->
+    <!-- DB: Table: orders                                       -->
+    <!--     Columns: order_id, customer_id, total,             -->
+    <!--              status, created_at                         -->
+    <!--     Table: order_items                                  -->
+    <!--     Columns: item_id, order_id, dish_name, qty, price  -->
+    <!-- API: GET    /api/orders/customer/{userId}               -->
+    <!--      DELETE /api/orders/cancel/{orderId}                -->
+    <!-- STATUS VALUES: pending, preparing, ready, paid          -->
+    <!-- ======================================================== -->
+    <div id="section-myorders" class="dash-section">
+        <div class="card-panel">
+
+            <h2 class="card-title">My Orders</h2>
+
+            <div id="ordersContainer">
+                <!-- Dynamically filled by JS -->
+                <!-- API: GET /api/orders/customer/{userId} on section open -->
+                <p class="empty-state-msg">No orders yet.</p>
+            </div>
+
+        </div>
+    </div>
+    <!-- END SECTION: MY ORDERS -->
+
+
+    <!-- ======================================================== -->
+    <!-- SECTION: FEEDBACK                                       -->
+    <!-- Same form as main website feedback page                 -->
+    <!-- Pre-filled with profile name and email                  -->
+    <!-- DB: Table: feedback                                     -->
+    <!--     Columns: feedback_id, user_id, name, email,        -->
+    <!--              message, rating, created_at               -->
+    <!-- API: POST /api/feedback/submit                          -->
+    <!-- ======================================================== -->
+    <div id="section-feedback" class="dash-section">
+        <div class="card-panel">
+
+            <h2 class="card-title">Feedback</h2>
+
+            <div class="feedback-form">
+
+                <div class="feedback-input-group">
+                    <!-- Pre-filled from profile: users.name -->
+                    <input type="text" class="feedback-input" id="fbName" placeholder="Full Name">
+                </div>
+
+                <div class="feedback-input-group">
+                    <!-- Pre-filled from profile: users.email -->
+                    <input type="email" class="feedback-input" id="fbEmail" placeholder="Email">
+                </div>
+
+                <div class="feedback-input-group">
+                    <textarea class="feedback-input feedback-textarea" id="fbMessage" placeholder="Feedback"></textarea>
+                </div>
+
+                <div class="rating-row">
+                    <span class="rate-label">Rate Us:</span>
+                    <div class="stars" id="fbStarRating">
+                        <span class="fb-star" data-value="1">★</span>
+                        <span class="fb-star" data-value="2">★</span>
+                        <span class="fb-star" data-value="3">★</span>
+                        <span class="fb-star" data-value="4">★</span>
+                        <span class="fb-star" data-value="5">★</span>
+                    </div>
+                </div>
+
+                <!-- API: POST /api/feedback/submit                  -->
+                <!-- DB: INSERT INTO feedback                        -->
+                <button class="card-save-btn" onclick="submitFeedback()">Submit</button>
+
+            </div>
+
+        </div>
+    </div>
+    <!-- END SECTION: FEEDBACK -->
+
+
+</div>
+<!-- END DASHBOARD CONTENT -->
+
+
+<!-- ============================================================ -->
+<!-- DISH CARD MODAL                                             -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeDishCard()"></div>
+
+<div class="modal-card" id="modalCard">
+    <div class="modal-image-wrapper">
+        <img src="" alt="" class="modal-plate-img" id="modalImage">
+    </div>
+    <div class="modal-body">
+        <div class="modal-title-row">
+            <h3 class="modal-dish-name" id="modalName"></h3>
+            <div class="modal-price-block">
+                <span class="modal-price-label">Price</span>
+                <span class="modal-price" id="modalPrice"></span>
+            </div>
+        </div>
+        <p class="modal-description" id="modalDesc"></p>
+        <div class="modal-divider"></div>
+        <p class="modal-add-to-cart-label">Add To Cart</p>
+        <div class="modal-bottom-row">
+            <div class="modal-counter">
+                <button class="counter-btn" onclick="changeQty(-1)">−</button>
+                <span class="counter-value" id="counterValue">0</span>
+                <button class="counter-btn" onclick="changeQty(1)">+</button>
+            </div>
+            <!-- Adds item to cart array → updates cart sidebar in real time -->
+            <button class="add-to-cart-btn" onclick="addToCart()">Add</button>
+        </div>
+    </div>
+</div>
+
+
+</div>
+
+<script>
+    (async function() {
+        const res = await fetch('/api/auth/check');
+        if (res.ok) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('dashboard-content').style.visibility = 'visible';
+        } else {
+            window.location.replace('/login');
+        }
+    })();
+</script>
+<script src="/js/dashboards/customer.js"></script>
+</body>
+</html>

@@ -1,0 +1,551 @@
+/* ========================= */
+/* MENU PAGE                 */
+/* ========================= */
+
+body {
+    background: #FFB366;
+}
+
+/* ===== NAVBAR ===== */
+/* Reusing same navbar styles from home.css */
+/* If global.css doesn't include navbar, paste home.css navbar block here */
+
+.navbar {
+    width: 100%;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 150px;
+}
+
+.logo-container {
+    margin-right: 30px;
+}
+
+.logo-box {
+    width: 120px;
+    height: 120px;
+    background: #744D30;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.logo-subtitle {
+    font-family: 'Poppins', sans-serif;
+    color: #ffffff;
+    font-size: 13px;
+    letter-spacing: 3px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-links a {
+    font-family: 'Poppins', sans-serif;
+    font-size: 25px;
+    font-weight: 300;
+    color: #744D30;
+    transition: .3s;
+}
+
+.nav-links a:hover {
+    transform: translateY(-3px);
+}
+
+.login-area {
+    margin-left: auto;
+}
+
+.login-btn {
+    width: 200px;
+    height: 65px;
+    border-radius: 50px;
+    font-family: 'Poppins', sans-serif;
+    background: #744D30;
+    color: #FFF8F0;
+    font-size: 22px;
+    font-weight: 300;
+    transition: .2s;
+}
+
+.login-btn:hover {
+    transform: translateY(-3px);
+}
+
+
+/* ===== HERO SECTION ===== */
+
+.menu-hero-section {
+    width: 100%;
+    min-height: 500px;
+    background: #FFB366;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 150px;
+}
+
+.menu-hero-content {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: -30px;
+}
+
+.menu-hero-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 40px;
+    font-weight: 600;
+    color: #744D30;
+    margin-bottom: 10px;
+}
+
+.menu-hero-sub {
+    font-family: 'Poppins', sans-serif;
+    font-size: 17px;
+    font-weight: 300;
+    color: #744D30;
+    margin-bottom: 100px;
+}
+
+.menu-explore-btn {
+    width: 200px;
+    height: 55px;
+    border-radius: 50px;
+    background: #744D30;
+    color: #ffffff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 22px;
+    font-weight: 500;
+    transition: .3s;
+    cursor: pointer;
+}
+
+.menu-explore-btn:hover {
+    transform: translateY(-4px);
+}
+
+.menu-hero-image-container {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-hero-image {
+    width: 450px;
+    height: auto;
+    display: block;
+    margin-top: -55px;  /* adjust this number — more negative = more up */
+
+}
+
+
+/* ===== FEATURED DISHES ===== */
+/* Same as home page — reusing exact same classes */
+
+.featured-dishes {
+    width: 100%;
+    min-height: 600px;
+    background: #FFF8F0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 50px 150px;
+}
+
+.featured-header {
+    text-align: center;
+    max-width: 1000px;
+    margin-bottom: 60px;
+}
+
+.featured-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 40px;
+    font-weight: 600;
+    color: #67482d;
+    margin-bottom: 10px;
+}
+
+.featured-description {
+    font-family: 'Poppins', sans-serif;
+    font-size: 20px;
+    color: #8B5E3C;
+    line-height: 1.6;
+}
+
+.featured-cards {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 90px;
+    flex-wrap: nowrap;
+}
+
+.dish-card {
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.dish-image-container {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    bottom: 20px;
+}
+
+.dish-shadow-circle {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: #744D30FF;
+    left: -30px;
+    top: 20px;
+    z-index: 1;
+}
+
+.dish-image {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    object-fit: cover;
+    border-radius: 50%;
+    transition: .1s;
+    z-index: 2;
+}
+.dish-image:hover { transform: translateY(-5px); }
+
+.dish-image2 {
+    position: relative;
+    width: 250px;
+    height: 250px;
+    object-fit: cover;
+    transition: .2s;
+    border-radius: 50%;
+    top: 18px;
+    bottom: 20px;
+    z-index: 5;
+}
+.dish-image2:hover { transform: translateY(-5px); }
+
+.dish-image3 {
+    position: relative;
+    width: 290px;
+    height: 290px;
+    object-fit: cover;
+    transition: .2s;
+    border-radius: 50%;
+    right: 38px;
+    bottom: 28px;
+    z-index: 5;
+}
+.dish-image3:hover { transform: translateY(-5px); }
+
+.dish-card h4 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: #744D30FF;
+}
+
+
+/* ===== MENU SECTION ===== */
+
+.menu-section {
+    width: 100%;
+    background: #744D30;
+    padding: 60px 150px 80px 150px;
+}
+
+.menu-section-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.menu-section-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 42px;
+    font-weight: 600;
+    color: #FFF8F0;
+    margin-bottom: 12px;
+}
+
+.menu-divider {
+    width: 100%;
+    height: 1.5px;
+    background: rgba(255, 248, 240, 0.4);
+    margin: 0 auto;
+}
+
+/* 3-column grid */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 50px 60px;
+    justify-items: center;
+    margin-bottom: 20px;
+}
+
+.menu-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    /* TODO: onClick → redirect to login if not authenticated */
+}
+
+.menu-plate-wrapper {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    /* Dark shadow offset bottom-left like in UI */
+    filter: drop-shadow(-12px 12px 6px rgba(0, 0, 0, 0.55));
+    transition: .2s;
+}
+
+.menu-plate-wrapper:hover {
+    transform: translateY(-6px);
+    filter: drop-shadow(-14px 16px 8px rgba(0, 0, 0, 0.65));
+}
+
+.menu-plate-img {
+    width: 220px;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    flex-shrink: 0;
+}
+
+.menu-item-name {
+    font-family: 'Poppins', sans-serif;
+    font-size: 23px;
+    font-weight: 600;
+    color: #FFF8F0;
+    margin-top: 18px;
+    text-align: center;
+}
+
+/* ===== ADD TO CART MODAL ===== */
+
+/* Dark overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Modal card — slides in from top */
+.modal-card {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -70%);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1000;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+
+    background: #FFF8F0;
+    border-radius: 24px;
+    width: 420px;
+    padding-bottom: 30px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-card.active {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Image area */
+.modal-image-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 30px 0 20px 0;
+    background: #FFF8F0;
+}
+
+.modal-plate-img {
+    width: 220px;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    filter: drop-shadow(-8px 8px 6px rgba(0,0,0,0.35));
+}
+
+/* Body content */
+.modal-body {
+    padding: 0 28px;
+}
+
+/* Title row */
+.modal-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 12px;
+}
+
+.modal-dish-name {
+    font-family: 'Poppins', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #2d1a0e;
+}
+
+.modal-price-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.modal-price-label {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: #8B5E3C;
+}
+
+.modal-price {
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2d1a0e;
+}
+
+/* Description */
+.modal-description {
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+    color: #4a3728;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+
+/* Divider */
+.modal-divider {
+    width: 100%;
+    height: 1px;
+    background: #d4b89a;
+    margin-bottom: 14px;
+}
+
+/* Add to Cart text */
+.modal-add-to-cart {
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #8B5E3C;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+/* Bottom row */
+.modal-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Counter */
+.modal-counter {
+    display: flex;
+    align-items: center;
+    background: #FFB366;
+    border-radius: 50px;
+    padding: 6px 6px;
+    gap: 4px;
+}
+
+.counter-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #744D30;
+    color: #FFF8F0;
+    font-size: 22px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: .2s;
+    border: none;
+}
+
+.counter-btn:hover {
+    transform: scale(1.08);
+}
+
+.counter-value {
+    font-family: 'Poppins', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #2d1a0e;
+    min-width: 36px;
+    text-align: center;
+}
+
+/* Order Now button */
+.order-now-btn {
+    flex: 1;
+    height: 55px;
+    border-radius: 50px;
+    background: #744D30;
+    color: #FFF8F0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .3s;
+    border: none;
+}
+
+.order-now-btn:hover {
+    transform: translateY(-3px);
+    background: #5c3a22;
+}

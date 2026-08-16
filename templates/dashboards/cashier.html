@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NibbleNest RMS - Cashier Dashboard</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/dashboards/cashier.css">
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- NOTIFICATION BAR                                            -->
+<!-- DB:  Table: notifications                                   -->
+<!-- API: GET /api/notifications/unread?userId={cashierId}       -->
+<!-- ============================================================ -->
+<div class="notif-bar" id="notifBar">
+    <span class="notif-message" id="notifMessage"></span>
+    <button class="notif-close" onclick="closeNotification()">✕</button>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- PENDING ORDERS SIDEBAR (Left)                               -->
+<!-- DB:  Table: orders WHERE status='ready_for_payment'         -->
+<!-- API: GET /api/orders/ready-for-payment                      -->
+<!-- REALTIME: Poll every 10s or WebSocket                       -->
+<!-- ============================================================ -->
+<div class="left-overlay" id="leftOverlay" onclick="closePendingSidebar()"></div>
+
+<div class="pending-sidebar" id="pendingSidebar">
+    <div class="sidebar-header pending-header">
+        <h3 class="sidebar-title">Pending Payment</h3>
+        <button class="sidebar-close" onclick="closePendingSidebar()">✕</button>
+    </div>
+    <div class="sidebar-list" id="pendingSidebarList"></div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- PAID ORDERS SIDEBAR (Right)                                 -->
+<!-- Shows orders where customer paid — cashier confirms with OK -->
+<!-- DB:  Table: payments WHERE status='pending_cashier_ok'      -->
+<!--      AND cashier_id=?                                       -->
+<!-- API: GET /api/payments/awaiting-confirmation?cashierId={id} -->
+<!-- ============================================================ -->
+<div class="right-overlay" id="rightOverlay" onclick="closePaidSidebar()"></div>
+
+<div class="paid-sidebar" id="paidSidebar">
+    <div class="sidebar-header paid-header">
+        <h3 class="sidebar-title">Paid Orders</h3>
+        <button class="sidebar-close" onclick="closePaidSidebar()">✕</button>
+    </div>
+    <div class="sidebar-list" id="paidSidebarList"></div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- RECEIPT CARD (zooms in — shown to cashier + sent to customer)-->
+<!-- DB:  Table: payments                                        -->
+<!-- API: POST /api/payments/generate-receipt                    -->
+<!-- ============================================================ -->
+<div class="receipt-overlay" id="receiptOverlay"></div>
+
+<div class="receipt-card" id="receiptCard">
+    <div class="receipt-logo">
+        <h2 class="receipt-logo-title">NibbleNest</h2>
+        <p class="receipt-logo-sub">R | M | S</p>
+    </div>
+    <div class="receipt-divider"></div>
+    <div class="receipt-meta" id="receiptMeta"></div>
+    <div class="receipt-divider"></div>
+    <div class="receipt-items" id="receiptItems"></div>
+    <div class="receipt-divider"></div>
+    <div class="receipt-totals" id="receiptTotals"></div>
+    <div class="receipt-divider"></div>
+    <!-- API: POST /api/payments/send-receipt                    -->
+    <button class="send-receipt-btn" onclick="sendReceiptToCustomer()">
+        Send Receipt to Customer
+    </button>
+    <button class="close-receipt-btn" onclick="closeReceipt()">Close</button>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- HISTORY ZOOM CARD                                           -->
+<!-- DB:  Table: payments JOIN orders JOIN users                 -->
+<!-- API: GET /api/payments/history?cashierId={id}               -->
+<!-- ============================================================ -->
+<div class="history-overlay" id="historyOverlay" onclick="closeHistoryCard()"></div>
+
+<div class="history-card" id="historyCard">
+    <div class="history-card-header">
+        <h3 class="history-card-title">Paid Orders History</h3>
+        <button class="sidebar-close" onclick="closeHistoryCard()">✕</button>
+    </div>
+    <div class="history-card-list" id="historyCardList"></div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- PROFILE CARD                                                -->
+<!-- DB:  Table: users — fully admin managed                     -->
+<!-- API: GET /api/cashier/profile                               -->
+<!-- ============================================================ -->
+<div class="profile-overlay" id="profileOverlay" onclick="closeProfileCard()"></div>
+
+<div class="profile-card-modal" id="profileCardModal">
+    <div class="profile-avatar-section">
+        <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="54" height="54">
+            <circle cx="30" cy="22" r="14" fill="#8B5E3C"/>
+            <path d="M6 54c0-13.255 10.745-24 24-24s24 10.745 24 24" fill="#8B5E3C"/>
+        </svg>
+        <div>
+            <h3 class="profile-staff-name" id="profileDisplayName">--</h3>
+            <span class="profile-role-tag">Cashier</span>
+        </div>
+    </div>
+    <div class="profile-two-col">
+        <div class="profile-col">
+            <p class="profile-col-title">Personal Info</p>
+            <div class="profile-info-row">
+                <span class="profile-info-label">Email</span>
+                <span class="profile-info-val" id="cashierEmail">--</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="profile-info-label">Phone</span>
+                <span class="profile-info-val" id="cashierPhone">--</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="profile-info-label">Employee ID</span>
+                <span class="profile-info-val" id="cashierEmpId">--</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="profile-info-label">Member Since</span>
+                <span class="profile-info-val" id="cashierSince">--</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="profile-info-label">Shift</span>
+                <span class="profile-info-val" id="cashierShift">--</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="profile-info-label">Status</span>
+                <span class="profile-info-val status-active">Active</span>
+            </div>
+        </div>
+        <div class="profile-col-divider"></div>
+        <div class="profile-col">
+            <p class="profile-col-title">Performance</p>
+            <div class="profile-stat-box">
+                <span class="profile-stat-num quick-color" id="profileQuick">0</span>
+                <span class="profile-stat-label">Quick Responses</span>
+            </div>
+            <div class="profile-stat-box">
+                <span class="profile-stat-num avg-color" id="profileAverage">0</span>
+                <span class="profile-stat-label">Average Responses</span>
+            </div>
+            <div class="profile-stat-box">
+                <span class="profile-stat-num late-color" id="profileLate">0</span>
+                <span class="profile-stat-label">Late Responses</span>
+            </div>
+            <div class="profile-stat-box">
+                <span class="profile-stat-num" id="profileAvgTime">--</span>
+                <span class="profile-stat-label">Avg Response Time</span>
+            </div>
+        </div>
+    </div>
+    <div class="profile-btn-row">
+        <p class="profile-readonly-note">Profile is managed by Admin</p>
+        <button class="profile-logout-btn" onclick="handleLogout()">Logout</button>
+    </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- TOP BAR                                                     -->
+<!-- ============================================================ -->
+<div class="cashier-topbar">
+    <div class="topbar-logo-box">
+        <h1 class="topbar-logo-title">NibbleNest</h1>
+        <p class="topbar-logo-subtitle">R | M | S</p>
+    </div>
+    <h2 class="topbar-dashboard-title">Cashier Dashboard</h2>
+    <button class="profile-icon-btn" onclick="openProfileCard()">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="38" height="38">
+            <circle cx="20" cy="15" r="9" fill="#744D30"/>
+            <path d="M4 38c0-8.837 7.163-16 16-16s16 7.163 16 16" fill="#744D30"/>
+        </svg>
+    </button>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MAIN CONTENT                                                -->
+<!-- ============================================================ -->
+<div class="cashier-content">
+
+    <!-- LEFT: Pending Orders Panel -->
+    <!-- Shows compact summary rows for each pending order       -->
+    <!-- Click "View Orders" to open full sidebar               -->
+    <div class="cashier-panel pending-panel">
+        <div class="panel-header">
+            <h3 class="panel-title">Pending Payment</h3>
+            <span class="panel-badge" id="pendingBadge">0</span>
+        </div>
+        <p class="panel-subtitle">Orders waiting for payment</p>
+
+        <!-- Compact summary rows — visible before opening sidebar -->
+        <div class="panel-summary-list" id="pendingSummaryList"></div>
+
+        <button class="panel-open-btn" onclick="openPendingSidebar()">
+            View Orders
+        </button>
+    </div>
+
+
+    <!-- CENTER: Performance + History Preview -->
+    <div class="cashier-center">
+
+        <!-- Performance Card -->
+        <!-- DB:  SELECT response_time_seconds FROM payments        -->
+        <!-- API: GET /api/cashier/performance?cashierId={id}       -->
+        <div class="performance-card">
+
+            <div class="perf-card-top">
+                <h4 class="perf-card-title">My Performance</h4>
+                <span class="perf-avg-pill">
+            Avg: <strong id="avgResponseTime">--</strong>
+        </span>
+            </div>
+
+            <!-- 3 stat blocks in a row -->
+            <div class="perf-stats-row">
+                <div class="perf-stat quick">
+                    <span class="perf-stat-num" id="quickCount">0</span>
+                    <span class="perf-stat-label">Quick</span>
+                    <span class="perf-stat-sub">under 5 min</span>
+                </div>
+                <div class="perf-stat average">
+                    <span class="perf-stat-num" id="avgCount">0</span>
+                    <span class="perf-stat-label">Average</span>
+                    <span class="perf-stat-sub">5 – 10 min</span>
+                </div>
+                <div class="perf-stat late">
+                    <span class="perf-stat-num" id="lateCount">0</span>
+                    <span class="perf-stat-label">Late</span>
+                    <span class="perf-stat-sub">over 10 min</span>
+                </div>
+            </div>
+
+            <!-- Chart gets its own clearly separated section -->
+            <div class="perf-chart-section">
+                <p class="perf-chart-label">Response Time Trend</p>
+                <div class="perf-chart-wrapper">
+                    <canvas id="responseChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- History Preview Card -->
+        <!-- Shows last few confirmed history orders              -->
+        <!-- DB:  payments WHERE status='confirmed' LIMIT 4       -->
+        <!-- API: GET /api/payments/recent?cashierId={id}         -->
+        <div class="history-preview-card" onclick="openHistoryCard()">
+            <div class="history-preview-header">
+                <h4 class="history-preview-title">Paid Orders</h4>
+                <span class="history-preview-hint">tap to expand</span>
+            </div>
+            <div class="history-preview-list" id="historyPreviewList">
+                <p class="empty-preview">No paid orders yet.</p>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- RIGHT: Paid Orders Panel -->
+    <!-- Orders where customer paid — cashier needs to confirm   -->
+    <!-- Shows compact summary rows for each paid order          -->
+    <!-- Click "View Paid" to open right sidebar                -->
+    <div class="cashier-panel paid-panel">
+        <div class="panel-header">
+            <h3 class="panel-title">Paid Orders</h3>
+            <span class="panel-badge paid-badge-count" id="paidBadge">0</span>
+        </div>
+        <p class="panel-subtitle">Customer paid — confirm receipt</p>
+
+        <!-- Compact summary rows — visible before opening sidebar -->
+        <div class="panel-summary-list" id="paidSummaryList"></div>
+
+        <button class="panel-open-btn paid-btn" onclick="openPaidSidebar()">
+            View Paid
+        </button>
+    </div>
+
+</div>
+
+
+<!-- REMOVE BEFORE GOING LIVE -->
+<button onclick="simulateReadyOrder()"
+        style="position:fixed;bottom:20px;right:20px;
+               background:#FFB366;color:#744D30;
+               border:none;padding:12px 24px;
+               border-radius:50px;cursor:pointer;
+               font-family:'Poppins',sans-serif;
+               font-size:15px;font-weight:600;
+               box-shadow:0 4px 20px rgba(0,0,0,0.15);
+               z-index:9999;">
+    + Test Order
+</button>
+<!-- REMOVE BEFORE GOING LIVE -->
+<div id="testControls" style="position:fixed;bottom:20px;left:20px;
+     display:flex;flex-direction:column;gap:10px;z-index:9999;">
+
+    <select id="testOrderSelect"
+            style="height:44px;padding:0 14px;border-radius:50px;
+                   border:2px solid #744D30;background:#fff8f0;
+                   color:#744D30;font-family:'Poppins',sans-serif;
+                   font-size:14px;font-weight:600;cursor:pointer;">
+        <option value="">— select order to pay —</option>
+    </select>
+
+    <div style="display:flex;gap:10px;">
+        <button onclick="testPayCash()"
+                style="flex:1;background:#2e7d52;color:#fff;
+                       border:none;padding:10px 16px;border-radius:50px;
+                       font-family:'Poppins',sans-serif;font-size:14px;
+                       font-weight:600;cursor:pointer;">
+            Pay Cash
+        </button>
+        <button onclick="testPayCard()"
+                style="flex:1;background:#1a5276;color:#fff;
+                       border:none;padding:10px 16px;border-radius:50px;
+                       font-family:'Poppins',sans-serif;font-size:14px;
+                       font-weight:600;cursor:pointer;">
+            Pay Card
+        </button>
+    </div>
+
+</div>
+
+<script>
+    (async function() {
+        const res = await fetch('/api/auth/check');
+        if (!res.ok) window.location.href = '/login';
+    })();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/js/dashboards/cashier.js"></script>
+</body>
+</html>

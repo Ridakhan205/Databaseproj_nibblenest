@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NibbleNest RMS - Menu</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/menu.css">
+    <link rel="stylesheet" href="/css/components/footer.css">
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+    <div class="logo-container">
+        <div class="logo-box">
+            <h1 class="logo-title">NibbleNest</h1>
+            <p class="logo-subtitle">R | M | S</p>
+        </div>
+    </div>
+
+    <div class="nav-links">
+        <!-- TODO: Replace temporary redirects later -->
+        <a href="/">Home</a>
+        <a href="#">Menu</a>
+        <a href="/feedback">Feedback</a>
+    </div>
+
+    <div class="login-area">
+        <!-- TODO: Connect Login Page -->
+        <button class="login-btn" onclick="window.location.href='/login'">Login</button>
+    </div>
+</nav>
+
+
+<!-- ===== HERO SECTION ===== -->
+<section class="menu-hero-section">
+
+    <div class="menu-hero-content">
+        <h2 class="menu-hero-title">Discover Your Favorite Meal</h2>
+        <p class="menu-hero-sub">Fresh Flavors Await You!</p>
+        <button class="menu-explore-btn" onclick="document.getElementById('menu-section').scrollIntoView({behavior: 'smooth'})">
+            Explore Now!
+        </button>
+    </div>
+
+    <div class="menu-hero-image-container">
+        <img src="/images/menuig.png" alt="Menu Clipboard" class="menu-hero-image">
+    </div>
+
+</section>
+
+
+<!-- ===== FEATURED DISHES ===== -->
+<section class="featured-dishes">
+
+    <div class="featured-header">
+        <h3 class="featured-title">Featured Dishes</h3>
+        <p class="featured-description">Our Favorites</p>
+    </div>
+
+    <div class="featured-cards">
+
+        <!-- Card 1 -->
+        <div class="dish-card">
+            <div class="dish-image-container">
+                <div class="dish-shadow-circle"></div>
+                <img src="/images/1g1.png" alt="Classic Burger" class="dish-image">
+            </div>
+            <h4>Classic Burger</h4>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="dish-card">
+            <div class="dish-image-container">
+                <div class="dish-shadow-circle"></div>
+                <img src="/images/ig2.png" alt="Cheesy Pizza" class="dish-image2">
+            </div>
+            <h4>Cheesy Pizza</h4>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="dish-card">
+            <div class="dish-image-container">
+                <div class="dish-shadow-circle"></div>
+                <img src="/images/ig3.png" alt="Sweet Dessert" class="dish-image3">
+            </div>
+            <h4>Sweet Dessert</h4>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ===== MENU SECTION ===== -->
+<section class="menu-section" id="menu-section">
+
+    <div class="menu-section-header">
+        <h3 class="menu-section-title">Menu</h3>
+        <div class="menu-divider"></div>
+    </div>
+
+    <div class="menu-grid" id="mainMenuGrid">
+
+        <!-- Row 1 -->
+        <div class="menu-item" onclick="openModal('/images/clubwich.png', 'Club Wich', 'PKR 450/-', 'A crispy grilled sandwich served with golden fries on the side.')">
+            <!-- TODO: onClick → redirect to login if not authenticated -->
+            <div class="menu-plate-wrapper">
+                <img src="/images/clubwich.png" alt="Club Wich" class="menu-plate-img">
+            </div>
+            <p class="menu-item-name">Club wich</p>
+        </div>
+
+        <div class="menu-item" onclick="openModal('/images/lavashrol.png', 'Lavash Rol', 'PKR 500/-', 'Soft lavash wrap filled with fresh veggies and grilled fillings.')">
+            <div class="menu-plate-wrapper">
+                <img src="/images/lavashrol.png" alt="Lavash Rol" class="menu-plate-img">
+            </div>
+            <p class="menu-item-name">Lavash Rol</p>
+        </div>
+
+        <div class="menu-item" onclick="openModal('/images/mushta.png', 'Mushta', 'PKR 480/-', 'A rich and flavorful traditional dish made with fresh ingredients.')">
+            <div class="menu-plate-wrapper">
+                <img src="/images/mushta.png" alt="Mushta" class="menu-plate-img">
+            </div>
+            <p class="menu-item-name">Mushta</p>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="menu-item" onclick="openModal('/images/classicburger.png', 'Classic Burger', 'PKR 550/-', 'A juicy beef patty with fresh toppings on a toasted bun, served with crispy golden fries.')">
+            <div class="menu-plate-wrapper">
+                <img src="/images/classicburger.png" alt="Classic Burger" class="menu-plate-img">
+            </div>
+            <p class="menu-item-name">Classic Burger</p>
+        </div>
+
+        <div class="menu-item" onclick="openModal('/images/roastedjelepeno.png', 'Roasted Jelepeno', 'PKR 420/-', 'Perfectly roasted jalapenos with a smoky spicy kick, great as a side.')">
+            <div class="menu-plate-wrapper">
+                <img src="/images/roastedjelepeno.png" alt="Roasted Jelepeno" class="menu-plate-img">
+            </div>
+            <p class="menu-item-name">Roasted Jelepeno</p>
+        </div>
+
+        <div class="menu-item" onclick="openModal('/images/cheesypizza.png', 'Cheesy Pizza', 'PKR 700/-', 'Loaded with melted cheese on a crispy base with rich tomato sauce.')">
+            <div class="menu-plate-wrapper">
+                <img src="/images/cheesypizza.png" alt="Cheesy Pizza" class="menu-plate-img">
+            </div>
+            <p class="menu-item-name">Cheesy Pizza</p>
+        </div>
+
+    </div>
+
+
+    <!-- ===== SWEET DESSERT SUBSECTION ===== -->
+    <div class="menu-section-header" style="margin-top: 90px;" >
+        <h3 class="menu-section-title">Sweet Dessert</h3>
+        <div class="menu-divider"></div>
+    </div>
+
+    <div class="menu-grid" id="dessertMenuGrid">
+
+        <!-- Row 1 -->
+        <div class="menu-item" onclick="openModal('/images/sweetdoughnut.png', 'Sweet Doughnut', 'PKR 250/-', 'Soft fluffy doughnut glazed with sweet icing and sprinkles on top.')">
+            <div class="menu-plate-wrapper">
+                <img src="/images/sweetdoughnut.png" alt="Sweet Doughnut" class="menu-plate-img">
+            </div>
+            <p class="menu-item-name">Sweet Doughnut</p>
+        </div>
+
+        <div class="menu-item" onclick="openModal('/images/cakeroll.png', 'Cake Roll', 'PKR 300/-', 'A delicate rolled cake with creamy filling and a soft sponge layer.')">
+            <div class="menu-plate-wrapper">
+                <img src="/images/cakeroll.png" alt="Cake Roll" class="menu-plate-img">
+            </div>
+            <p class="menu-item-name">Cake Roll</p>
+        </div>
+
+        <div class="menu-item" onclick="openModal('/images/chocoberry.png', 'Choco Berry', 'PKR 350/-', 'Fresh berries dipped in rich dark chocolate, a perfect sweet treat.')">
+            <div class="menu-plate-wrapper">
+                <img src="/images/chocoberry.png" alt="Choco Berry" class="menu-plate-img">
+            </div>
+            <p class="menu-item-name">Choco Berry</p>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="menu-item" onclick="openModal('/images/chocolatecake.png', 'Chocolate Cake', 'PKR 400/-', 'A moist layered chocolate cake with velvety ganache frosting.')">
+            <div class="menu-plate-wrapper">
+                <img src="/images/chocolatecake.png" alt="Chocolate Cake" class="menu-plate-img">
+            </div>
+            <p class="menu-item-name">Chocolate Cake</p>
+        </div>
+
+        <div class="menu-item" onclick="openModal('/images/sweetpancakes.png', 'Sweet Pancakes', 'PKR 320/-', 'Fluffy golden pancakes drizzled with maple syrup and fresh berries.')">
+            <div class="menu-plate-wrapper">
+                <img src="/images/sweetpancakes.png" alt="Sweet Pancakes" class="menu-plate-img">
+            </div>
+            <p class="menu-item-name">Sweet Pancakes</p>
+        </div>
+
+        <div class="menu-item" onclick="openModal('/images/bberrycake.png', 'B Berry Cake', 'PKR 380/-', 'A light berry cake topped with blueberries and a dusting of powdered sugar.')">
+            <div class="menu-plate-wrapper">
+                <img src="/images/bberrycake.png" alt="B Berry Cake" class="menu-plate-img">
+            </div>
+            <p class="menu-item-name">B Berry Cake</p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <!-- Left Side -->
+        <div class="footer-brand">
+            <div class="logo-box1">
+                <h1 class="logo-title1">NibbleNest</h1>
+                <p class="logo-subtitle1">R | M | S</p>
+            </div>
+            <p class="brand-tagline">Where every bite feels like home.</p>
+        </div>
+
+        <div class="line"></div>
+
+        <!-- Right Side -->
+        <div class="footer-right">
+
+            <div class="footer-column">
+                <h4>Quick Links</h4>
+                <a href="/">Home</a>
+                <a href="#menu-section">Menu</a>
+                <a href="/feedback">FeedBack</a>
+                <a href="/#about">About Us</a>
+            </div>
+
+            <div class="footer-column">
+                <h4>Navigations</h4>
+                <a href="/feedback">FAQ's</a>
+                <a href="#">Contact Us</a>
+                <a href="/feedback">FeedBack</a>
+                <a href="/#about">About Us</a>
+            </div>
+
+            <div class="footer-connect">
+                <h4>Connect With Us</h4>
+                <div class="social-icons">
+                    <img src="/images/instagram.png" alt="Instagram">
+                    <img src="/images/linkedin.png" alt="LinkedIn">
+                    <img src="/images/github.png" alt="Github">
+                </div>
+                <h5>Contact Us</h5>
+                <p class="phone-number">+92 123 4667890</p>
+                <div class="contact-icons">
+                    <img src="/images/whatsapp.png" alt="WhatsApp">
+                    <img src="/images/email.png" alt="Email">
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        <p>© 2026 NibbleNest RMS. All Rights Reserved.</p>
+    </div>
+
+</footer>
+
+
+<!-- ===== ADD TO CART MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+
+<div class="modal-card" id="modalCard">
+
+    <div class="modal-image-wrapper">
+        <img src="" alt="" class="modal-plate-img" id="modalImage">
+    </div>
+
+    <div class="modal-body">
+
+        <div class="modal-title-row">
+            <h3 class="modal-dish-name" id="modalName">Classic Burger</h3>
+            <div class="modal-price-block">
+                <span class="modal-price-label">Price</span>
+                <span class="modal-price" id="modalPrice">PKR 550/-</span>
+            </div>
+        </div>
+
+        <p class="modal-description" id="modalDesc">A juicy beef patty with fresh toppings on a toasted bun, served with a side of crispy golden fries.</p>
+
+        <div class="modal-divider"></div>
+
+        <p class="modal-add-to-cart">Add To Cart</p>
+
+        <div class="modal-bottom-row">
+
+            <div class="modal-counter">
+                <button class="counter-btn" onclick="changeQty(-1)">−</button>
+                <span class="counter-value" id="counterValue">0</span>
+                <button class="counter-btn" onclick="changeQty(1)">+</button>
+            </div>
+
+            <!-- TODO: Connect to login page — set role as customer -->
+            <button class="order-now-btn" onclick="window.location.href='/login?role=customer'">
+                Order Now
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- JS -->
+<script src="/js/navigation.js"></script>
+<script src="/js/menu.js"></script>
+</body>
+</html>

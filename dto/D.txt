@@ -1,0 +1,4 @@
+DTOs carry data between frontend and backend. The Adapter pattern
+uses DTOs to convert them into database entities and vice versa.
+For example, DishAddRequest is converted to Dish by DishAdapter,
+and Dish is converted to DishResponseDTO to send back to the frontend.

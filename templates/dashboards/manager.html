@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NibbleNest RMS - Manager Dashboard</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/dashboards/manager.css">
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- NOTIFICATION BAR                                            -->
+<!-- DB:  Table: notifications WHERE user_id=managerId           -->
+<!-- API: GET /api/notifications/unread?userId={managerId}       -->
+<!-- ============================================================ -->
+<div class="notif-bar" id="notifBar">
+    <span class="notif-message" id="notifMessage"></span>
+    <button class="notif-close" onclick="closeNotification()">✕</button>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- ALERT BAR — Auto-highlights critical issues                 -->
+<!-- Shows if: low inventory / poor feedback / late cashier etc  -->
+<!-- DB:  Checks inventory, feedback avg, performance tables     -->
+<!-- API: GET /api/manager/alerts                                -->
+<!-- ============================================================ -->
+<div class="alert-bar" id="alertBar" style="display:none;">
+    <div class="alert-bar-inner" id="alertBarInner"></div>
+    <button class="alert-bar-close" onclick="closeAlertBar()">✕</button>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- DETAIL ZOOM OVERLAY (shared by all zoom cards)             -->
+<!-- ============================================================ -->
+<div class="zoom-overlay" id="zoomOverlay" onclick="closeZoom()"></div>
+
+<!-- Sales Detail Zoom -->
+<div class="zoom-card" id="salesZoom">
+    <div class="zoom-header" style="background:#744D30;">
+        <h3 class="zoom-title">Sales Report — Full Detail</h3>
+        <button class="zoom-close" onclick="closeZoom()">✕</button>
+    </div>
+    <div class="zoom-body" id="salesZoomBody"></div>
+</div>
+
+<!-- Orders Detail Zoom -->
+<div class="zoom-card" id="ordersZoom">
+    <div class="zoom-header" style="background:#FFB366;">
+        <h3 class="zoom-title" style="color:#744D30;">Order Report — Full Detail</h3>
+        <button class="zoom-close" style="color:#744D30;" onclick="closeZoom()">✕</button>
+    </div>
+    <div class="zoom-body" id="ordersZoomBody"></div>
+</div>
+
+<!-- Feedback Detail Zoom -->
+<div class="zoom-card" id="feedbackZoom">
+    <div class="zoom-header" style="background:#744D30;">
+        <h3 class="zoom-title">Customer Feedback — Full Detail</h3>
+        <button class="zoom-close" onclick="closeZoom()">✕</button>
+    </div>
+    <div class="zoom-body" id="feedbackZoomBody"></div>
+</div>
+
+<!-- Inventory Detail Zoom -->
+<div class="zoom-card" id="inventoryZoom">
+    <div class="zoom-header" style="background:#FFB366;">
+        <h3 class="zoom-title" style="color:#744D30;">Inventory Report — Full Detail</h3>
+        <button class="zoom-close" style="color:#744D30;" onclick="closeZoom()">✕</button>
+    </div>
+    <div class="zoom-body" id="inventoryZoomBody"></div>
+</div>
+
+<!-- Employee — Cashier Detail Zoom -->
+<div class="zoom-card" id="cashierZoom">
+    <div class="zoom-header" style="background:#744D30;">
+        <h3 class="zoom-title">Cashier Performance — Full Detail</h3>
+        <button class="zoom-close" onclick="closeZoom()">✕</button>
+    </div>
+    <div class="zoom-body" id="cashierZoomBody"></div>
+</div>
+
+<!-- Employee — Chef Detail Zoom -->
+<div class="zoom-card" id="chefZoom">
+    <div class="zoom-header" style="background:#FFB366;">
+        <h3 class="zoom-title" style="color:#744D30;">Chef Performance — Full Detail</h3>
+        <button class="zoom-close" style="color:#744D30;" onclick="closeZoom()">✕</button>
+    </div>
+    <div class="zoom-body" id="chefZoomBody"></div>
+</div>
+
+<!-- Summary Report Zoom -->
+<div class="zoom-card zoom-card-wide" id="summaryZoom">
+    <div class="zoom-header" style="background:#744D30;">
+        <h3 class="zoom-title">Generate & Send Summary Report</h3>
+        <button class="zoom-close" onclick="closeZoom()">✕</button>
+    </div>
+    <div class="zoom-body" id="summaryZoomBody"></div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- PROFILE CARD                                                -->
+<!-- DB:  Table: users WHERE role='manager'                      -->
+<!-- API: GET /api/manager/profile                               -->
+<!-- ============================================================ -->
+<div class="profile-overlay" id="profileOverlay" onclick="closeProfileCard()"></div>
+<div class="profile-card-modal" id="profileCardModal">
+    <div class="profile-avatar-section">
+        <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="54" height="54">
+            <circle cx="30" cy="22" r="14" fill="#8B5E3C"/>
+            <path d="M6 54c0-13.255 10.745-24 24-24s24 10.745 24 24" fill="#8B5E3C"/>
+        </svg>
+        <div>
+            <h3 class="profile-staff-name" id="profileDisplayName">--</h3>
+            <span class="profile-role-tag">Manager</span>
+        </div>
+    </div>
+    <div class="profile-info-grid">
+        <div class="profile-info-row"><span class="profile-info-label">Email</span><span class="profile-info-val" id="managerEmail">--</span></div>
+        <div class="profile-info-row"><span class="profile-info-label">Phone</span><span class="profile-info-val" id="managerPhone">--</span></div>
+        <div class="profile-info-row"><span class="profile-info-label">Employee ID</span><span class="profile-info-val" id="managerEmpId">--</span></div>
+        <div class="profile-info-row"><span class="profile-info-label">Member Since</span><span class="profile-info-val" id="managerSince">--</span></div>
+        <div class="profile-info-row"><span class="profile-info-label">Shift</span><span class="profile-info-val" id="managerShift">--</span></div>
+        <div class="profile-info-row"><span class="profile-info-label">Status</span><span class="profile-info-val status-active">Active</span></div>
+    </div>
+    <div class="profile-btn-row">
+        <p class="profile-readonly-note">Profile is managed by Admin</p>
+        <button class="profile-logout-btn" onclick="handleLogout()">Logout</button>
+    </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- TOP BAR                                                     -->
+<!-- ============================================================ -->
+<div class="manager-topbar">
+    <div class="topbar-logo-box">
+        <h1 class="topbar-logo-title">NibbleNest</h1>
+        <p class="topbar-logo-subtitle">R | M | S</p>
+    </div>
+    <h2 class="topbar-dashboard-title">Manager Dashboard</h2>
+    <button class="profile-icon-btn" onclick="openProfileCard()">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="38" height="38">
+            <circle cx="20" cy="15" r="9" fill="#744D30"/>
+            <path d="M4 38c0-8.837 7.163-16 16-16s16 7.163 16 16" fill="#744D30"/>
+        </svg>
+    </button>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- DATE RANGE FILTER BAR                                       -->
+<!-- Affects all charts and cards simultaneously                 -->
+<!-- DB:  All queries use WHERE created_at BETWEEN ? AND ?       -->
+<!-- ============================================================ -->
+<div class="filter-bar">
+    <div class="filter-bar-inner">
+        <span class="filter-label">Date Range</span>
+        <div class="filter-presets">
+            <button class="filter-btn active" onclick="setDateRange('today', this)">Today</button>
+            <button class="filter-btn" onclick="setDateRange('week', this)">This Week</button>
+            <button class="filter-btn" onclick="setDateRange('month', this)">This Month</button>
+            <button class="filter-btn" onclick="setDateRange('year', this)">This Year</button>
+        </div>
+        <div class="filter-custom">
+            <input type="date" class="filter-date-input" id="filterFrom" onchange="setCustomRange()">
+            <span class="filter-date-sep">to</span>
+            <input type="date" class="filter-date-input" id="filterTo" onchange="setCustomRange()">
+        </div>
+        <div class="filter-active-label">
+            Showing: <strong id="filterActiveLabel">Today</strong>
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- MAIN CONTENT                                                -->
+<!-- ============================================================ -->
+<div class="manager-content">
+
+
+    <!-- ======================================================= -->
+    <!-- ROW 1: Sales Report + Order Report                      -->
+    <!-- ======================================================= -->
+    <div class="reports-row">
+
+        <!-- SALES REPORT CARD                                   -->
+        <!-- DB:  Table: payments WHERE cashier_id JOIN orders   -->
+        <!-- API: GET /api/reports/sales?from={}&to={}           -->
+        <div class="report-card" id="salesCard" onclick="openZoom('salesZoom')">
+            <div class="report-card-header">
+                <div>
+                    <h3 class="report-card-title">Sales Report</h3>
+                    <p class="report-card-sub">From cashier payment data</p>
+                </div>
+                <span class="report-expand-hint">tap to expand</span>
+            </div>
+
+            <!-- KPI Pills -->
+            <div class="kpi-row">
+                <div class="kpi-pill">
+                    <span class="kpi-val" id="salesTotalRevenue">PKR 0</span>
+                    <span class="kpi-label">Revenue</span>
+                </div>
+                <div class="kpi-pill">
+                    <span class="kpi-val" id="salesTotalOrders">0</span>
+                    <span class="kpi-label">Orders</span>
+                </div>
+                <div class="kpi-pill">
+                    <span class="kpi-val" id="salesAvgOrder">PKR 0</span>
+                    <span class="kpi-label">Avg Order</span>
+                </div>
+            </div>
+
+            <!-- Revenue Line Chart (preview) -->
+            <div class="chart-wrapper-sm">
+                <canvas id="revenueChartPreview"></canvas>
+            </div>
+        </div>
+
+
+        <!-- ORDER REPORT CARD                                   -->
+        <!-- DB:  Table: orders JOIN order_items                 -->
+        <!-- API: GET /api/reports/orders?from={}&to={}          -->
+        <div class="report-card report-card-alt" id="ordersCard" onclick="openZoom('ordersZoom')">
+            <div class="report-card-header">
+                <div>
+                    <h3 class="report-card-title" style="color:#744D30;">Order Report</h3>
+                    <p class="report-card-sub" style="color:#8B5E3C;">From chef order data</p>
+                </div>
+                <span class="report-expand-hint" style="color:#9e7a5a;">tap to expand</span>
+            </div>
+
+            <!-- KPI Pills -->
+            <div class="kpi-row">
+                <div class="kpi-pill kpi-pill-alt">
+                    <span class="kpi-val" id="ordersTotalOrders">0</span>
+                    <span class="kpi-label" style="color:#5c3a22;">Total Orders</span>
+                </div>
+                <div class="kpi-pill kpi-pill-alt">
+                    <span class="kpi-val" id="ordersTopDish">--</span>
+                    <span class="kpi-label" style="color:#5c3a22;">Top Dish</span>
+                </div>
+            </div>
+
+            <!-- Popular Dishes Bar Chart (preview) -->
+            <div class="chart-wrapper-sm">
+                <canvas id="dishesChartPreview"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================= -->
+    <!-- ROW 2: Customer Feedback + Inventory                    -->
+    <!-- ======================================================= -->
+    <div class="reports-row">
+
+        <!-- CUSTOMER FEEDBACK CARD                              -->
+        <!-- DB:  Table: feedback WHERE created_at BETWEEN       -->
+        <!-- API: GET /api/reports/feedback?from={}&to={}        -->
+        <!-- TRIGGER: Customer submits feedback after payment    -->
+        <!--          confirmation notification on their dashboard-->
+        <div class="report-card" id="feedbackCard" onclick="openZoom('feedbackZoom')">
+            <div class="report-card-header">
+                <div>
+                    <h3 class="report-card-title">Customer Feedback</h3>
+                    <p class="report-card-sub">Post-payment order ratings</p>
+                </div>
+                <span class="report-expand-hint">tap to expand</span>
+            </div>
+
+            <!-- Avg Rating Display -->
+            <div class="feedback-avg-row">
+                <div class="feedback-avg-big">
+                    <span class="feedback-avg-num" id="feedbackAvgRating">--</span>
+                    <div class="feedback-stars" id="feedbackStarsPreview"></div>
+                </div>
+                <div class="feedback-total-count">
+                    <span id="feedbackTotalCount">0</span> reviews
+                </div>
+            </div>
+
+            <!-- Rating Distribution Bar Chart (preview) -->
+            <div class="chart-wrapper-sm">
+                <canvas id="feedbackChartPreview"></canvas>
+            </div>
+        </div>
+
+
+        <!-- INVENTORY REPORT CARD                               -->
+        <!-- DB:  Table: inventory JOIN ingredients              -->
+        <!-- API: GET /api/reports/inventory                     -->
+        <div class="report-card report-card-alt" id="inventoryCard" onclick="openZoom('inventoryZoom')">
+            <div class="report-card-header">
+                <div>
+                    <h3 class="report-card-title" style="color:#744D30;">Inventory Report</h3>
+                    <p class="report-card-sub" style="color:#8B5E3C;">Stock levels & alerts</p>
+                </div>
+                <span class="report-expand-hint" style="color:#9e7a5a;">tap to expand</span>
+            </div>
+
+            <!-- Health KPIs -->
+            <div class="kpi-row">
+                <div class="kpi-pill kpi-pill-green">
+                    <span class="kpi-val" id="invOkCount">0</span>
+                    <span class="kpi-label">OK</span>
+                </div>
+                <div class="kpi-pill kpi-pill-warn">
+                    <span class="kpi-val" id="invLowCount">0</span>
+                    <span class="kpi-label">Low</span>
+                </div>
+                <div class="kpi-pill kpi-pill-danger">
+                    <span class="kpi-val" id="invCriticalCount">0</span>
+                    <span class="kpi-label">Critical</span>
+                </div>
+            </div>
+
+            <!-- Inventory Health Donut (preview) -->
+            <div class="chart-wrapper-sm chart-wrapper-donut">
+                <canvas id="inventoryChartPreview"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================= -->
+    <!-- ROW 3: Employee Reports (full width)                    -->
+    <!-- ======================================================= -->
+    <div class="reports-row reports-row-single">
+
+        <div class="report-card report-card-full">
+            <div class="report-card-header">
+                <div>
+                    <h3 class="report-card-title">Employee Reports</h3>
+                    <p class="report-card-sub">Click a card to see full individual performance</p>
+                </div>
+            </div>
+
+            <div class="employee-overview-row">
+
+                <!-- Cashier Overview Card — click to zoom -->
+                <!-- DB:  Table: payments WHERE cashier_id        -->
+                <!-- API: GET /api/reports/cashier-performance    -->
+                <div class="employee-card cashier-emp-card" onclick="openZoom('cashierZoom')">
+                    <div class="employee-card-header">
+                        <h4 class="employee-card-title">Cashier Performance</h4>
+                        <span class="report-expand-hint">tap for detail</span>
+                    </div>
+                    <div class="employee-kpi-row">
+                        <div class="emp-kpi">
+                            <span class="emp-kpi-val quick-color" id="cashierAvgQuick">0</span>
+                            <span class="emp-kpi-label">Quick</span>
+                        </div>
+                        <div class="emp-kpi">
+                            <span class="emp-kpi-val avg-color" id="cashierAvgAverage">0</span>
+                            <span class="emp-kpi-label">Average</span>
+                        </div>
+                        <div class="emp-kpi">
+                            <span class="emp-kpi-val late-color" id="cashierAvgLate">0</span>
+                            <span class="emp-kpi-label">Late</span>
+                        </div>
+                        <div class="emp-kpi">
+                            <span class="emp-kpi-val" id="cashierOverallAvgTime">--</span>
+                            <span class="emp-kpi-label">Avg Time</span>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper-sm">
+                        <canvas id="cashierPreviewChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chef Overview Card — click to zoom -->
+                <!-- DB:  Table: orders WHERE chef_id             -->
+                <!-- API: GET /api/reports/chef-performance       -->
+                <div class="employee-card chef-emp-card" onclick="openZoom('chefZoom')">
+                    <div class="employee-card-header">
+                        <h4 class="employee-card-title" style="color:#744D30;">Chef Performance</h4>
+                        <span class="report-expand-hint" style="color:#9e7a5a;">tap for detail</span>
+                    </div>
+                    <div class="employee-kpi-row">
+                        <div class="emp-kpi">
+                            <span class="emp-kpi-val" id="chefTotalOrders">0</span>
+                            <span class="emp-kpi-label">Total Orders</span>
+                        </div>
+                        <div class="emp-kpi">
+                            <span class="emp-kpi-val" id="chefTopDish">--</span>
+                            <span class="emp-kpi-label">Top Dish</span>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper-sm">
+                        <canvas id="chefPreviewChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================= -->
+    <!-- ROW 4: Summary Report — Generate & Send to Admin        -->
+    <!-- ======================================================= -->
+    <div class="reports-row reports-row-single">
+
+        <div class="report-card report-card-full report-card-summary">
+            <div class="report-card-header">
+                <div>
+                    <h3 class="report-card-title">Summary Report</h3>
+                    <p class="report-card-sub">Generate, send to Admin, or download</p>
+                </div>
+                <button class="generate-report-btn" onclick="openZoom('summaryZoom'); event.stopPropagation();">
+                    Generate Report
+                </button>
+            </div>
+
+            <!-- Sent Reports History -->
+            <!-- DB:  Table: manager_reports WHERE manager_id=?  -->
+            <!-- API: GET /api/reports/sent-history?managerId={} -->
+            <div class="sent-reports-list" id="sentReportsList">
+                <p class="empty-sent">No reports sent yet.</p>
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div><!-- end manager-content -->
+
+<script>
+    (async function() {
+        const res = await fetch('/api/auth/check');
+        if (!res.ok) window.location.href = '/login';
+    })();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/js/dashboards/manager.js"></script>
+</body>
+</html>

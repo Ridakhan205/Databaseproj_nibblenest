@@ -1,0 +1,4 @@
+Entities are Java classes that represent database tables.
+User stores all accounts, Dish stores menu items,
+Ingredient stores stock items, DishIngredient links dishes and ingredients,
+and WebsiteFeedback stores customer feedback."

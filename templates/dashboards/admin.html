@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>NibbleNest RMS - Admin</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/dashboards/admin.css">
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- NOTIFICATION BAR                                            -->
+<!-- DB:  Table: notifications WHERE user_id=adminId            -->
+<!-- API: GET /api/notifications/unread?userId={adminId}        -->
+<!-- ============================================================ -->
+<div class="notif-bar" id="notifBar">
+    <span class="notif-message" id="notifMessage"></span>
+    <button class="notif-close" onclick="closeNotification()">✕</button>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- CONFIRM MODAL (shared — used for delete/deactivate actions) -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="confirmOverlay"></div>
+<div class="confirm-modal" id="confirmModal">
+    <h3 class="confirm-title" id="confirmTitle">Are you sure?</h3>
+    <p class="confirm-msg" id="confirmMsg"></p>
+    <div class="confirm-btns">
+        <button class="confirm-cancel-btn" onclick="closeConfirm()">Cancel</button>
+        <button class="confirm-ok-btn" id="confirmOkBtn">Confirm</button>
+    </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- ZOOM OVERLAY (shared — detail views)                       -->
+<!-- ============================================================ -->
+<div class="zoom-overlay" id="zoomOverlay" onclick="closeZoom()"></div>
+<div class="zoom-card" id="zoomCard">
+    <div class="zoom-card-header" id="zoomCardHeader">
+        <h3 class="zoom-card-title" id="zoomCardTitle"></h3>
+        <button class="zoom-card-close" onclick="closeZoom()">✕</button>
+    </div>
+    <div class="zoom-card-body" id="zoomCardBody"></div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- ADMIN SHELL                                                 -->
+<!-- ============================================================ -->
+<div class="admin-shell">
+
+    <!-- ======================================================= -->
+    <!-- LEFT SIDEBAR                                            -->
+    <!-- ======================================================= -->
+    <aside class="admin-sidebar">
+
+        <!-- Logo — no box, centered, just text -->
+        <div class="sidebar-logo">
+            <h1 class="sidebar-logo-title">NibbleNest</h1>
+            <p class="sidebar-logo-sub">R | M | S</p>
+        </div>
+
+        <!-- Main Nav -->
+        <nav class="sidebar-nav">
+            <button class="sidebar-nav-item active" onclick="showSection('users', this)">
+                <span class="nav-icon"></span>
+                <span class="nav-label">Manage Users</span>
+            </button>
+            <button class="sidebar-nav-item" onclick="showSection('employees', this)">
+                <span class="nav-icon"></span>
+                <span class="nav-label">Manage Employees</span>
+            </button>
+            <button class="sidebar-nav-item" onclick="showSection('menu', this)">
+                <span class="nav-icon"></span>
+                <span class="nav-label">Manage Menu</span>
+            </button>
+            <button class="sidebar-nav-item" onclick="showSection('inventory', this)">
+                <span class="nav-icon"></span>
+                <span class="nav-label">Manage Inventory</span>
+            </button>
+            <button class="sidebar-nav-item" onclick="showSection('reports', this)">
+                <span class="nav-icon"></span>
+                <span class="nav-label">Reports</span>
+            </button>
+            <button class="sidebar-nav-item" onclick="showSection('feedbacks', this)">
+                <span class="nav-icon"></span>
+                <span class="nav-label">Feedbacks</span>
+            </button>
+        </nav>
+
+        <!-- Bottom Nav -->
+        <div class="sidebar-bottom">
+            <button class="sidebar-nav-item" onclick="showSection('settings', this)">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Settings</span>
+                <span class="reset-badge" id="resetBadge" style="display:none;">0</span>
+            </button>
+            <button class="sidebar-nav-item sidebar-logout" onclick="handleLogout()">
+                <span class="nav-label">Logout</span>
+            </button>
+        </div>
+
+    </aside>
+
+
+    <!-- ======================================================= -->
+    <!-- RIGHT CONTENT AREA                                      -->
+    <!-- ======================================================= -->
+    <main class="admin-content">
+
+
+        <!-- ================================================== -->
+        <!-- SECTION: MANAGE USERS                              -->
+        <!-- DB:  Table: users WHERE role='customer'            -->
+        <!-- API: GET /api/admin/users                          -->
+        <!-- ================================================== -->
+        <section class="admin-section active" id="section-users">
+
+            <div class="section-top">
+                <div>
+                    <h2 class="section-title">Manage Users</h2>
+                    <p class="section-sub">All registered customers</p>
+                </div>
+                <div class="section-search-row">
+                    <input type="text" class="search-input" placeholder="Search by name or email…"
+                           oninput="filterUsers(this.value)" id="userSearchInput">
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table" id="usersTable">
+                    <thead>
+                    <tr>
+                        <th>Customer ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Joined</th>
+                        <th>Total Orders</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+
+        </section>
+
+
+        <!-- ================================================== -->
+        <!-- SECTION: MANAGE EMPLOYEES                          -->
+        <!-- DB:  Table: users WHERE role IN (chef,cashier,mgr) -->
+        <!-- API: GET /api/admin/employees                      -->
+        <!--      POST /api/admin/employees/add                 -->
+        <!--      PUT  /api/admin/employees/{id}                -->
+        <!--      PUT  /api/admin/employees/{id}/status         -->
+        <!-- ================================================== -->
+        <section class="admin-section" id="section-employees">
+
+            <div class="section-top">
+                <div>
+                    <h2 class="section-title">Manage Employees</h2>
+                    <p class="section-sub">Hire and manage all staff</p>
+                </div>
+                <button class="primary-btn" onclick="openHireForm()">+ Hire Employee</button>
+            </div>
+
+            <!-- Hire Form (hidden until button clicked) -->
+            <!-- API: POST /api/admin/employees/add             -->
+            <!-- DB:  INSERT INTO users (role, name, email,     -->
+            <!--       phone, shift, employee_id=UUID,          -->
+            <!--       password=BCrypt(generated), created_at)  -->
+            <!-- AFTER: Send email with employee_id + password  -->
+            <div class="hire-form-wrapper" id="hireFormWrapper" style="display:none;">
+                <div class="hire-form">
+                    <h3 class="form-title">Hire New Employee</h3>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-input" id="hireeName" placeholder="Full name">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="hireeEmail" placeholder="Email address">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Phone</label>
+                            <input type="text" class="form-input" id="hireePhone" placeholder="Phone number">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Role</label>
+                            <select class="form-input form-select" id="hireeRole">
+                                <option value="">Select role</option>
+                                <option value="chef">Chef</option>
+                                <option value="cashier">Cashier</option>
+                                <option value="manager">Manager</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Shift</label>
+                            <select class="form-input form-select" id="hireeShift">
+                                <option value="">Select shift</option>
+                                <option value="Morning">Morning</option>
+                                <option value="Evening">Evening</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p class="form-note">
+                        Employee ID and password will be auto-generated and sent to their email.
+                    </p>
+                    <div class="form-actions">
+                        <button class="ghost-btn" onclick="closeHireForm()">Cancel</button>
+                        <button class="primary-btn" onclick="hireEmployee()">Hired Employee</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table" id="employeesTable">
+                    <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Shift</th>
+                        <th>Joined</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="employeesTableBody"></tbody>
+                </table>
+            </div>
+
+        </section>
+
+
+        <!-- ================================================== -->
+        <!-- SECTION: MANAGE MENU                               -->
+        <!-- DB:  Table: dishes, dish_ingredients               -->
+        <!-- API: GET    /api/admin/menu                        -->
+        <!--      POST   /api/admin/menu/add                    -->
+        <!--      PUT    /api/admin/menu/{id} (price only)      -->
+        <!--      DELETE /api/admin/menu/{id}                   -->
+        <!-- ================================================== -->
+        <section class="admin-section" id="section-menu">
+
+            <div class="section-top">
+                <div>
+                    <h2 class="section-title">Manage Menu</h2>
+                    <p class="section-sub">Add dishes and manage the menu</p>
+                </div>
+                <button class="primary-btn" onclick="openAddDishForm()">+ Add Dish</button>
+            </div>
+
+            <!-- Add Dish Form -->
+            <!-- API: POST /api/admin/menu/add                  -->
+            <!-- DB:  INSERT INTO dishes                        -->
+            <!--      INSERT INTO dish_ingredients (main only)  -->
+            <!--      INSERT INTO inventory for each ingredient -->
+            <div class="hire-form-wrapper" id="addDishFormWrapper" style="display:none;">
+                <div class="hire-form">
+                    <h3 class="form-title">Add New Dish</h3>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label class="form-label">Dish Name</label>
+                            <input type="text" class="form-input" id="dishName" placeholder="e.g. Classic Burger">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Price (PKR)</label>
+                            <input type="number" class="form-input" id="dishPrice" placeholder="e.g. 550">
+                        </div>
+                        <div class="form-field form-field-full">
+                            <label class="form-label">Description</label>
+                            <input type="text" class="form-input" id="dishDescription" placeholder="Short description">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Category</label>
+                            <select class="form-input form-select" id="dishCategory">
+                                <option value="menu">Menu</option>
+                                <option value="dessert">Dessert</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Image</label>
+                            <input type="file" class="form-input" id="dishImage" accept="image/*">
+                        </div>
+                    </div>
+
+                    <!-- Main Ingredients -->
+                    <div class="ingredients-section">
+                        <div class="ingredients-header">
+                            <p class="form-label">Main Ingredients</p>
+                            <button class="ghost-btn-sm" onclick="addIngredientRow()">+ Add Ingredient</button>
+                        </div>
+                        <p class="form-note">Only main ingredients (e.g. Chicken, Pasta) — these link to inventory and chef prep checklist.</p>
+                        <div id="ingredientRows"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="ghost-btn" onclick="closeAddDishForm()">Cancel</button>
+                        <button class="primary-btn" onclick="addDish()">Add to Menu</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Grid — dish cards -->
+            <div class="menu-grid" id="menuGrid"></div>
+
+        </section>
+
+
+        <!-- ================================================== -->
+        <!-- SECTION: MANAGE INVENTORY                          -->
+        <!-- Linked to dishes — shows dish → ingredient → stock -->
+        <!-- DB:  Table: inventory JOIN dish_ingredients        -->
+        <!--      JOIN dishes                                   -->
+        <!-- API: GET /api/admin/inventory                      -->
+        <!--      PUT /api/admin/inventory/{id}/restock         -->
+        <!-- ================================================== -->
+        <section class="admin-section" id="section-inventory">
+
+            <div class="section-top">
+                <div>
+                    <h2 class="section-title">Manage Inventory</h2>
+                    <p class="section-sub">Dish-linked ingredient stock levels</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table" id="inventoryTable">
+                    <thead>
+                    <tr>
+                        <th>Main Ingredient</th>
+                        <th>Current Stock</th>
+                        <th>Min Threshold</th>
+                        <th>Unit</th>
+                        <th>Status</th>
+                        <th>Last Restocked</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody"></tbody>
+                </table>
+            </div>
+
+        </section>
+
+
+        <!-- ================================================== -->
+        <!-- SECTION: REPORTS (from Manager)                    -->
+        <!-- DB:  Table: manager_reports                        -->
+        <!-- API: GET /api/admin/reports                        -->
+        <!--      GET /api/admin/reports/{id}                   -->
+        <!-- ================================================== -->
+        <section class="admin-section" id="section-reports">
+
+            <div class="section-top">
+                <div>
+                    <h2 class="section-title">Reports</h2>
+                    <p class="section-sub">Performance reports submitted by managers</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table" id="reportsTable">
+                    <thead>
+                    <tr>
+                        <th>Period</th>
+                        <th>Submitted By</th>
+                        <th>Date Sent</th>
+                        <th>Revenue</th>
+                        <th>Orders</th>
+                        <th>Avg Rating</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="reportsTableBody"></tbody>
+                </table>
+            </div>
+
+        </section>
+
+        <!-- ================================================== -->
+        <!-- SECTION: FEEDBACKS                                 -->
+        <!-- DB:  Table: website_feedback                       -->
+        <!-- DB:  Table: order_feedback                         -->
+        <!-- API: GET /api/admin/feedbacks                      -->
+        <!-- ================================================== -->
+        <section class="admin-section" id="section-feedbacks">
+
+            <div class="section-top">
+                <div>
+                    <h2 class="section-title">Feedbacks</h2>
+                    <p class="section-sub">Website and order feedback received from customers</p>
+                </div>
+            </div>
+
+            <!-- Website Feedback -->
+            <div class="settings-block">
+                <h3 class="settings-block-title">Website Feedback</h3>
+
+                <div class="table-wrapper" style="margin-top:20px;">
+                    <table class="admin-table" id="feedbackTable">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                            <th>Date</th>
+                        </tr>
+                        </thead>
+                        <tbody id="websiteFeedbackTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <!-- Order Feedback -->
+            <div class="settings-block">
+                <h3 class="settings-block-title">Order Feedback</h3>
+
+                <div class="table-wrapper" style="margin-top:20px;">
+                    <table class="admin-table">
+                        <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Order ID</th>
+                            <th>Dish</th>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                            <th>Date</th>
+                        </tr>
+                        </thead>
+                        <tbody id="orderFeedbackTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================================================== -->
+        <!-- SECTION: SETTINGS                                  -->
+        <!-- Includes: Tax setting + Password Reset Center      -->
+        <!-- ================================================== -->
+        <section class="admin-section" id="section-settings">
+
+            <div class="section-top">
+                <div>
+                    <h2 class="section-title">Settings</h2>
+                    <p class="section-sub">System configuration and password resets</p>
+                </div>
+            </div>
+
+            <!-- Tax Setting -->
+            <!-- DB:  Table: settings WHERE key='tax_amount'   -->
+            <!-- API: GET /api/settings/tax                    -->
+            <!--      PUT /api/admin/settings/tax              -->
+            <div class="settings-block">
+                <h3 class="settings-block-title">Tax Amount</h3>
+                <p class="settings-block-sub">Applied to every order at checkout</p>
+                <div class="tax-row">
+                    <span class="tax-label">PKR</span>
+                    <input type="number" class="tax-input" id="taxInput" value="50" min="0">
+                    <button class="primary-btn" onclick="saveTax()">Save Tax</button>
+                </div>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <div class="settings-block">
+                <h3 class="settings-block-title">Restaurant Contact Number</h3>
+                <p class="settings-block-sub">
+                    Contact number displayed in website footer
+                </p>
+
+                <div class="tax-row">
+                    <input
+                            type="text"
+                            class="tax-input"
+                            id="footerContactInput"
+                            value="+92 300 1234567"
+                    >
+                    <button class="primary-btn" onclick="saveFooterContact()">
+                        Save Contact
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-divider"></div>
+
+
+            <div class="settings-divider"></div>
+
+            <!-- Password Reset Requests                       -->
+            <!-- DB:  Table: password_reset_requests           -->
+            <!-- API: GET /api/admin/reset-requests            -->
+            <!--      PUT /api/admin/reset-password/{userId}   -->
+            <!-- AFTER: System generates new password          -->
+            <!--        Sends to user/employee email           -->
+            <!--        Marks request as resolved              -->
+            <div class="settings-block">
+                <h3 class="settings-block-title">
+                    Password Reset Requests
+                    <span class="reset-count-badge" id="resetCountBadge">0 pending</span>
+                </h3>
+                <p class="settings-block-sub">Users and employees who requested a password reset</p>
+
+                <div class="table-wrapper" style="margin-top:20px;">
+                    <table class="admin-table" id="resetTable">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Email</th>
+                            <th>Requested At</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody id="resetTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+
+    </main>
+</div>
+
+<script>
+    (async function() {
+        const res = await fetch('/api/auth/check');
+        if (!res.ok) window.location.href = '/login';
+    })();
+</script>
+<script src="/js/dashboards/admin.js?v=3"></script>
+</body>
+</html>

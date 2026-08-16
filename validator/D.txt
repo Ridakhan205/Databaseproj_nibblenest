@@ -1,0 +1,3 @@
+ValidatorCOR package implements Chain of Responsibility pattern.
+Each validator checks one thing: name, price, or ingredients.
+ If one fails, it stops and returns an error. If all pass, the dish is saved
